@@ -1,0 +1,144 @@
+// Remover conta:
+//contas.firstIndex { conta in
+//    // encontrar o primeiro índice que corresponde ao número da conta
+//}
+//
+//contas.remove(at: ) // indice encontrado
+
+
+// Transferir:
+// Input: número da conta + o valor
+// conta.saldo += / -=
+
+import Foundation
+
+typealias Conta = (numero: String, senha: String, saldo: Double, isAdmin: Bool)
+
+var contas: [Conta] = [
+    ("0000", "admin", 0.0, true),
+    ("0001", "djasfrwue4wq", 250.0, false),
+    ("0002", "483950rfjwklf", 0.01, false),
+    ("0003", "senha", 10.00, false),
+]
+
+
+var contaLogada: Conta? = nil
+
+func criar_conta(contas: inout [Conta]) {
+    print("Digite o numero da conta:")
+    let numero: String = obterInput()
+    
+    print("Digite a senha da conta:")
+    let senha: String = obterInput()
+    
+    let conta = (numero, senha, 0.0, false)
+    contas.append(conta)
+}
+
+func obterInput() -> String {
+    return readLine()?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+}
+
+// MENUS
+
+func logado(contaLogada: inout Conta) {
+
+    if !contaLogada.isAdmin {
+      print("""
+    1. Ver dados
+    2. Depositar
+    3. Transferir
+    4. Logout
+    """)
+    let resposta = obterInput()
+        
+        switch(resposta) {
+        case "1":
+            // FIXME: arrumar
+            print(contaLogada)
+        case "2":
+            print(contaLogada)
+        print("Valor do depósito")
+            let valor = Double(obterInput()) ?? 0.0
+            contaLogada.saldo = contaLogada.saldo+valor
+            print(contaLogada)
+        
+        case "3": transferir()
+        
+        case "4": sair()
+        default: usermenu()
+        }
+        
+    } else {
+        
+    }
+}
+
+func transferir() {
+print("Digite o valor da transferencia")
+let valor = Double(obterInput())
+    contaLogada?.saldo -=
+}
+
+func abrirmenu() {
+    if contaLogada != nil {
+        logado(contaLogada: &contaLogada!)
+    } else {
+        print("""
+              1. Criar conta
+              2. Login
+              3. Sair
+              """)
+        usermenu()
+    }
+}
+
+func usermenu(){
+    let resposta = readLine()?.trimmingCharacters(in: .whitespacesAndNewlines)
+    
+    switch(resposta) {
+    case "1":
+        criar_conta(contas: &contas)
+    case "2":
+        logar(contas: contas, contaLogada: &contaLogada)
+    case "3": sair()
+    default: usermenu()
+    }
+}
+
+// CONTAS
+
+func logar(contas: [Conta], contaLogada: inout Conta?) {
+    print("Digite o numero da conta:")
+    let numero: String = obterInput()
+
+    print("Digite a senha da conta:")
+    let senha: String = obterInput()
+    
+    let conta = contas.first(where: { conta in
+        conta.numero == numero
+        && conta.senha == senha
+    })
+    
+    contaLogada = conta
+}
+
+func exibirContas(em contas: [Conta]) {
+    for conta in contas {
+        print("""
+        Numero: \(conta.numero)
+        Saldo: \(conta.saldo)
+        
+        """)
+    }
+}
+
+// MAIN
+
+func sair(){
+    exit(0)
+}
+
+while true {
+    abrirmenu()
+}
