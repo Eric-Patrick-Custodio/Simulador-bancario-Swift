@@ -1,144 +1,292 @@
-// Remover conta:
-//contas.firstIndex { conta in
-//    // encontrar o primeiro índice que corresponde ao número da conta
-//}
-//
-//contas.remove(at: ) // indice encontrado
-
-
-// Transferir:
-// Input: número da conta + o valor
-// conta.saldo += / -=
-
 import Foundation
 
-typealias Conta = (numero: String, senha: String, saldo: Double, isAdmin: Bool)
+typealias Conta = (
+    numero: String,
+    senha: String,
+    saldo: Double,
+    isAdmin: Bool
+)
 
 var contas: [Conta] = [
     ("0000", "admin", 0.0, true),
     ("0001", "djasfrwue4wq", 250.0, false),
     ("0002", "483950rfjwklf", 0.01, false),
-    ("0003", "senha", 10.00, false),
+    ("0003", "senha", 10.00, false)
 ]
 
-
 var contaLogada: Conta? = nil
-
-func criar_conta(contas: inout [Conta]) {
-    print("Digite o numero da conta:")
-    let numero: String = obterInput()
-    
-    print("Digite a senha da conta:")
-    let senha: String = obterInput()
-    
-    let conta = (numero, senha, 0.0, false)
-    contas.append(conta)
-}
 
 func obterInput() -> String {
     return readLine()?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
 }
 
-// MENUS
+func obterValor() -> Double? {
+    let entrada = obterInput()
 
-func logado(contaLogada: inout Conta) {
+    guard let valor = Double(entrada), valor > 0 else {
+        print("Valor inválido.")
+        return nil
+    }
 
-    if !contaLogada.isAdmin {
-      print("""
+    return valor
+}
+
+func criarConta() {
+    print("Digite o número da conta:")
+    let numero = obterInput()
+
+    if contas.contains(where: { $0.numero == numero }) {
+        print("Essa conta já existe.")
+        return
+    }
+
+    print("Digite a senha da conta:")
+    let senha = obterInput()
+
+    if senha.isEmpty {
+        print("A senha não pode ser vazia.")
+        return
+    }
+
+    let conta: Conta = (
+        numero: numero,
+        senha: senha,
+        saldo: 0.0,
+        isAdmin: false
+    )
+
+    contas.append(conta)
+
+    print("Conta criada com sucesso!")
+}
+
+func logar() {
+    print("Digite o número da conta:")
+    let numero = obterInput()
+
+    print("Digite a senha da conta:")
+    let senha = obterInput()
+
+    guard let conta = contas.first(where: {
+        $0.numero == numero && $0.senha == senha
+    }) else {
+        print("Número da conta ou senha incorretos.")
+        return
+    }
+
+    contaLogada = conta
+
+    print("Login realizado com sucesso!")
+}
+
+// MARK: - LOGOUT
+
+func logout() {
+    contaLogada = nil
+    print("Logout realizado.")
+}
+
+func depositar() {
+    guard let contaAtual = contaLogada else {
+        print("Nenhuma conta logada.")
+        return
+    }
+
+    print("Digite o valor do depósito:")
+
+    guard let valor = obterValor() else {
+        return
+    }
+
+    guard let indice = contas.firstIndex(where: {
+        $0.numero == contaAtual.numero
+    }) else {
+        print("Conta não encontrada.")
+        return
+    }
+
+    contas[indice].saldo += valor
+
+    // Atualiza também a cópia da conta logada
+    contaLogada = contas[indice]
+
+    print("Depósito realizado com sucesso!")
+    print("Novo saldo: R$ \(String(format: "%.2f", contas[indice].saldo))")
+}
+
+func transferir() {
+    guard let contaAtual = contaLogada else {
+        print("Nenhuma conta logada.")
+        return
+    }
+
+    print("Digite o número da conta de destino:")
+    let numeroDestino = obterInput()
+
+    guard numeroDestino != contaAtual.numero else {
+        print("Você não pode transferir para a própria conta.")
+        return
+    }
+
+    guard let indiceOrigem = contas.firstIndex(where: {
+        $0.numero == contaAtual.numero
+    }) else {
+        print("Conta de origem não encontrada.")
+        return
+    }
+
+    guard let indiceDestino = contas.firstIndex(where: {
+        $0.numero == numeroDestino
+    }) else {
+        print("Conta de destino não encontrada.")
+        return
+    }
+
+    print("Digite o valor da transferência:")
+
+    guard let valor = obterValor() else {
+        return
+    }
+
+    guard contas[indiceOrigem].saldo >= valor else {
+        print("Saldo insuficiente.")
+        return
+    }
+
+    contas[indiceOrigem].saldo -= valor
+    contas[indiceDestino].saldo += valor
+
+    // Atualiza a conta logada
+    contaLogada = contas[indiceOrigem]
+
+    print("Transferência realizada com sucesso!")
+    print("Novo saldo: R$ \(String(format: "%.2f", contas[indiceOrigem].saldo))")
+}
+
+func verDados() {
+    guard let conta = contaLogada else {
+        print("Nenhuma conta logada.")
+        return
+    }
+
+    print("""
+    
+    ----- DADOS DA CONTA -----
+    Número: \(conta.numero)
+    Saldo: R$ \(String(format: "%.2f", conta.saldo))
+    ---------------------------
+    
+    """)
+}
+
+func menuConta() {
+    guard let conta = contaLogada else {
+        return
+    }
+
+    if conta.isAdmin {
+        menuAdmin()
+        return
+    }
+
+    print("""
+    
+    ----- MENU -----
     1. Ver dados
     2. Depositar
     3. Transferir
     4. Logout
+    ----------------
     """)
+
     let resposta = obterInput()
-        
-        switch(resposta) {
-        case "1":
-            // FIXME: arrumar
-            print(contaLogada)
-        case "2":
-            print(contaLogada)
-        print("Valor do depósito")
-            let valor = Double(obterInput()) ?? 0.0
-            contaLogada.saldo = contaLogada.saldo+valor
-            print(contaLogada)
-        
-        case "3": transferir()
-        
-        case "4": sair()
-        default: usermenu()
-        }
-        
-    } else {
-        
-    }
-}
 
-func transferir() {
-print("Digite o valor da transferencia")
-let valor = Double(obterInput())
-    contaLogada?.saldo -=
-}
-
-func abrirmenu() {
-    if contaLogada != nil {
-        logado(contaLogada: &contaLogada!)
-    } else {
-        print("""
-              1. Criar conta
-              2. Login
-              3. Sair
-              """)
-        usermenu()
-    }
-}
-
-func usermenu(){
-    let resposta = readLine()?.trimmingCharacters(in: .whitespacesAndNewlines)
-    
-    switch(resposta) {
+    switch resposta {
     case "1":
-        criar_conta(contas: &contas)
+        verDados()
+
     case "2":
-        logar(contas: contas, contaLogada: &contaLogada)
-    case "3": sair()
-    default: usermenu()
+        depositar()
+
+    case "3":
+        transferir()
+
+    case "4":
+        logout()
+
+    default:
+        print("Opção inválida.")
     }
 }
 
-// CONTAS
-
-func logar(contas: [Conta], contaLogada: inout Conta?) {
-    print("Digite o numero da conta:")
-    let numero: String = obterInput()
-
-    print("Digite a senha da conta:")
-    let senha: String = obterInput()
+func menuAdmin() {
+    print("""
     
-    let conta = contas.first(where: { conta in
-        conta.numero == numero
-        && conta.senha == senha
-    })
-    
-    contaLogada = conta
+    ----- MENU ADMIN -----
+    1. Exibir contas
+    2. Logout
+    ----------------------
+    """)
+
+    let resposta = obterInput()
+
+    switch resposta {
+    case "1":
+        exibirContas()
+
+    case "2":
+        logout()
+
+    default:
+        print("Opção inválida.")
+    }
 }
 
-func exibirContas(em contas: [Conta]) {
+func exibirContas() {
     for conta in contas {
         print("""
-        Numero: \(conta.numero)
-        Saldo: \(conta.saldo)
+        Número: \(conta.numero)
+        Saldo: R$ \(String(format: "%.2f", conta.saldo))
         
         """)
     }
 }
 
-// MAIN
+func menuPrincipal() {
+    print("""
+    
+    ===== BANCO =====
+    1. Criar conta
+    2. Login
+    3. Sair
+    =================
+    """)
 
-func sair(){
+    let resposta = obterInput()
+
+    switch resposta {
+    case "1":
+        criarConta()
+
+    case "2":
+        logar()
+
+    case "3":
+        sair()
+
+    default:
+        print("Opção inválida.")
+    }
+}
+
+func sair() {
     exit(0)
 }
 
 while true {
-    abrirmenu()
+    if contaLogada != nil {
+        menuConta()
+    } else {
+        menuPrincipal()
+    }
 }
